@@ -1,5 +1,5 @@
-import tkinter as tk
-from tkinter import *
+from core import TyperApplication
 
-root = Tk()
-mainloop()
+if __name__ == "__main__":
+    app = TyperApplication()
+    app.run()
