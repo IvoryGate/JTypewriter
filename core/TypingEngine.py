@@ -3,6 +3,9 @@ import threading
 from collections import defaultdict
 
 class TypingEngine:
+
+    # ----------- 初始化 ----------- #
+
     def __init__(self):
         """初始化输入引擎"""
         # 文本
@@ -11,11 +14,9 @@ class TypingEngine:
         
         # 用户输入情况
         self.user_input = ""
-        self.current_position = ""
+        self.current_position = 0
 
         # 统计
-        self.start_time = None
-        self.end_time = None
         self.total_chars = 0
         self.correct_chars = 0
         self.error_counts = 0
@@ -28,13 +29,8 @@ class TypingEngine:
 
         # 计时器
         self.timer = None
-
-        # # 回调函数
-        # self.on_update = self._on_update()
-        # self.on_complete = None
-        # self.on_error = None
-
-
+        self.start_time = None
+        self.end_time = None
 
     def load_text(self,text:str) -> None:
         """加载文本
@@ -47,7 +43,7 @@ class TypingEngine:
     def reset_engine(self) -> None:
         """重制打字引擎状态"""
         self.user_input = ""
-        self.current_position = ""
+        self.current_position = 0
         self.start_time = None
         self.end_time = None
         self.total_chars = len(self.text)
@@ -56,6 +52,8 @@ class TypingEngine:
         self.is_active = False
         self.is_completed = False
         self.timer = None
+
+    # ----------- 引擎状态控制 ----------- #
 
     def start_session(self) -> None:
         """启动打字会话"""
@@ -94,15 +92,32 @@ class TypingEngine:
             self.end_time = time.time()
             self.is_completed = True
 
+    # ----------- 用户输入处理 ----------- #
+
     def process_input(self, char:str):
         """用户输入字符处理
         Args:
             char(str): 输入的字符
         """
-        # if self.current_position >= len
-        pass
+
+        expected_char = self.text[self.current_position]
+        is_correct = char == expected_char
+
+        self.user_input += char
+
+        if is_correct:
+            self.correct_chars += 1
+        else:
+            self.error_counts += 1
+            self.error_positions.add(self.current_position)
+            self.error_analysis[expected_char] += 1
+
+        self.current_position += 1
+        self.status_update(self.get_current_status())
 
 
+
+    # ----------- 状态记录与更新 ----------- #
 
     def update_timer(self) -> None:
         """计时器更新"""
@@ -116,6 +131,20 @@ class TypingEngine:
             status(dict): 包含当前所有信息的字典
         """
         duration = self.get_duration()
+        statistic_info = self.calculate_statistic_info()
+
+        return {
+            'current_position': self.current_position,
+            'total_chars': self.total_chars,
+            'progress': self.current_position / self.total_chars * 100,
+            'correct_chars': self.correct_chars,
+            'error_counts': self.error_counts,
+            'duration_time': duration,
+            'wpm': statistic_info['wpm'],
+            'accuracy': statistic_info['accuracy']
+        }
+
+
 
     def get_duration(self) -> float:
         """获取经过的时间
@@ -124,7 +153,7 @@ class TypingEngine:
         """
         if self.start_time is None :
             return 0
-        elif self.end_time is None :
+        if self.end_time is not None :
             return self.end_time - self.start_time
         return time.time() - self.start_time
 
@@ -135,14 +164,58 @@ class TypingEngine:
         """
         duration_time = self.get_duration()
 
+        # 计算WPM
+        if duration_time > 0 and self.current_position > 0:
+            minuntes = duration_time / 60
+            wpm = (self.correct_chars / 5) / minuntes
+        else:
+            wpm = 0
+
+        # 计算准确率
+        if self.current_position > 0:
+            accuracy = (self.correct_chars / self.current_position) * 100
+        else:
+            accuracy = 0
+        
+        return {
+            'wpm': round(wpm, 1),
+            'accuracy': round(accuracy,1)
+        }
+
+    def status_update(self, status: dict):
+        print(
+            f"\r进度: {status['progress']:.1f}% | "
+            f"速度: {status['wpm']} WPM | "
+            f"准确率: {status['accuracy']:.1f}% | "
+            f"错误: {status['error_counts']} | "
+            f"时间: {self.format_time(status['duration_time'])}"
+            "   ",
+            end=""
+        )
 
 
-    def status_update():
-        pass
+    def format_time(self, seconds) -> str:
+        """将秒数格式化为 MM:SS 格式"""
+        minutes = int(seconds) // 60
+        seconds = int(seconds) % 60
+        return f"{minutes:02d}:{seconds:02d}"
 
 
-# if __name__ == "__main__":
-#     sample_text = "The quick brown fox jumps over the lazy dog."
-#     print("打字练习开始!")
-#     print("文本:", sample_text)
-#     print("请输入上面的文本 (输入完成后按回车):\n")
+if __name__ == "__main__":
+    engine = TypingEngine()
+
+    # 加载练习文本
+    sample_text = "The quick brown fox jumps over the lazy dog."
+    engine.load_text(sample_text)
+    
+    print("打字练习开始!")
+    print("文本:", sample_text)
+    print("请输入上面的文本 (输入完成后按回车):\n")
+
+    engine.start_session()
+
+    # 模拟用户输入
+    user_input = "The quick_brown fox jumps pver the lazy dog."
+    for char in user_input:
+        is_correct = engine.process_input(char)
+        time.sleep(0.1)  # 模拟输入延迟

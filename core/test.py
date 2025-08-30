@@ -21,3 +21,4 @@
 # print(f"屏幕尺寸(毫米): {width_mm} x {height_mm}")
 
 # root.mainloop()
+

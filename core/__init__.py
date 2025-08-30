@@ -1,3 +1,4 @@
 from core.DatabaseManager import DatabaseManger
 from core.TyperApplication import TyperApplication
 from core.TypingEngine import TypingEngine
+from core.KeyboardListener import KeyboardListener
