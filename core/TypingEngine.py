@@ -115,8 +115,6 @@ class TypingEngine:
         self.current_position += 1
         self.status_update(self.get_current_status())
 
-
-
     # ----------- 状态记录与更新 ----------- #
 
     def update_timer(self) -> None:
@@ -144,7 +142,7 @@ class TypingEngine:
             'accuracy': statistic_info['accuracy']
         }
 
-
+    # ----------- 辅助计算函数 ----------- #
 
     def get_duration(self) -> float:
         """获取经过的时间
@@ -193,13 +191,13 @@ class TypingEngine:
             end=""
         )
 
-
     def format_time(self, seconds) -> str:
         """将秒数格式化为 MM:SS 格式"""
         minutes = int(seconds) // 60
         seconds = int(seconds) % 60
         return f"{minutes:02d}:{seconds:02d}"
 
+# ----------- 测试 ----------- #
 
 if __name__ == "__main__":
     engine = TypingEngine()

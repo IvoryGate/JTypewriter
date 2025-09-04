@@ -19,3 +19,4 @@ class TyperApplication:
     def run(self) -> None:
         """运行应用"""
         self.root.mainloop()
+        
